@@ -156,6 +156,19 @@ module.exports = function (grunt) {
         }
       },
 
+      externalSrcMap: {
+        src: ['test/fixtures/basic/*.js'],
+        dest: 'tmp/sourceMaps.js',
+        options: {
+          debug: true,
+          externalSrcMap:{
+              mapfile: 'tmp/sourceMaps.js.map',
+              url: 'http://test.com/tmp/sourceMaps.js.map',
+              root: ''
+          }
+        }
+      },
+
       preBundleCb: {
         src: ['test/fixtures/ignore/*.js'],
         dest: 'tmp/ignores-pre.js',

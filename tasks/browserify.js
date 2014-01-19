@@ -15,6 +15,7 @@ var async = require('async');
  */
 var browserify = require('browserify');
 var shim = require('browserify-shim');
+var exorcist = require('exorcist');
 
 module.exports = function (grunt) {
   grunt.registerMultiTask('browserify', 'Grunt task for browserify.', function () {
@@ -130,8 +131,8 @@ module.exports = function (grunt) {
           var shimmed = [];
           b.transform(function (file) {
             if (shimmed.indexOf(file) < 0 &&
-                ctorOpts.noParse.indexOf(file) > -1 &&
-                shimPaths.indexOf(file) > -1) {
+              ctorOpts.noParse.indexOf(file) > -1 &&
+              shimPaths.indexOf(file) > -1) {
               shimmed.push(file);
               var data = 'var global=self;';
               var write = function (buffer) {
@@ -191,8 +192,12 @@ module.exports = function (grunt) {
           }
           opts.filter = function (id) {
             var included = externalModules.indexOf(id) < 0;
-            if (_filter) { return _filter(id) && included; }
-            else { return included; }
+            if (_filter) {
+              return _filter(id) && included;
+            }
+            else {
+              return included;
+            }
           };
         }
       }
@@ -237,14 +242,26 @@ module.exports = function (grunt) {
         next();
       };
 
-      b.bundle(opts, function (err, src) {
-        if (opts.postBundleCB) {
-          opts.postBundleCB(err, src, onBundleComplete);
-        }
-        else {
-          onBundleComplete(err, src);
-        }
-      });
+
+      if (opts.externalSrcMap) {
+        b.bundle(opts,function (err, src) {
+          if (opts.postBundleCB) {
+            opts.postBundleCB(err, src, onBundleComplete);
+          }
+          else {
+            onBundleComplete(err, src);
+          }
+        }).pipe(exorcist(opts.externalSrcMap.mapfile, opts.externalSrcMap.url, opts.externalSrcMap.root));
+      } else {
+        b.bundle(opts, function (err, src) {
+          if (opts.postBundleCB) {
+            opts.postBundleCB(err, src, onBundleComplete);
+          }
+          else {
+            onBundleComplete(err, src);
+          }
+        })
+      }
 
     }, this.async());
   });

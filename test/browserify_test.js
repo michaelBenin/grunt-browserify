@@ -279,6 +279,16 @@ module.exports = {
     test.done();
   },
 
+  externalSrcMap: function (test) {
+    test.expect(1);
+
+    var file = readFile('tmp/sourceMaps.js.map');
+    var json = JSON.parse(file);
+    test.ok(json.sources.length === 3);
+
+    test.done();
+  },
+
   postCallback: function (test) {
     test.expect(1);
 
